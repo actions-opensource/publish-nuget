@@ -17,7 +17,7 @@ jobs:
         uses: actions/setup-dotnet@main
 
       - name: Nuget Package And Upload
-        uses: csharp-opensource/publish-nuget@master
+        uses: actions-opensource/publish-nuget@master
         with:
           releaseVersion: ${{ github.event.release.tag_name }}
           repoUrl: ${{ github.server_url }}/${{ github.repository }}
