@@ -71,12 +71,14 @@ runs:
         
         if [ "${{ inputs.skipPackingArgs }}" = "true" ]; then
           echo "Skipping additional packing arguments."
-          dotnet pack -c Release -clp:ErrorsOnly \
+          dotnet pack --include-symbols \
+                      -c Release -clp:ErrorsOnly \
                       -o deploy \
                       /p:Version="$releaseVersion" \
                       /p:RepositoryUrl="$repoUrl"
         else
-          dotnet pack -c Release -clp:ErrorsOnly \
+          dotnet pack --include-symbols \
+                      -c Release -clp:ErrorsOnly \
                       -o deploy \
                       /p:PublishRepositoryUrl=${{ inputs.publishRepositoryUrl }} \
                       /p:PublishRepositoryType=${{ inputs.publishRepositoryType }} \
