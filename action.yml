@@ -53,31 +53,41 @@ inputs:
     description: "the build path to enter"
     default: ""
     required: false
+  skipPackingArgs:
+    description: "dont use any packing args except RepositoryUrl, Version"
+    default: "false"
+    required: false
 runs:
   using: "composite"
   steps:
     - name: Build & Packing
       shell: bash
-      env:
-        releaseVersion: ${{ inputs.releaseVersion }}
-        repoUrl: ${{ inputs.repoUrl }}
       run: |
         echo "pack version $releaseVersion"
         cd "${{ inputs.path }}"
         dotnet add package Microsoft.SourceLink.GitHub
         dotnet restore
         dotnet build -c Release -clp:ErrorsOnly
-        dotnet pack -c Release -clp:ErrorsOnly \
-                    -o deploy \
-                    /p:PublishRepositoryUrl=${{ inputs.publishRepositoryUrl }} \
-                    /p:PublishRepositoryType=${{ inputs.publishRepositoryType }} \
-                    /p:EmbedUntrackedSources=${{ inputs.embedUntrackedSources }} \
-                    /p:IncludeSymbols=${{ inputs.includeSymbols }} \
-                    /p:SymbolPackageFormat=${{ inputs.symbolPackageFormat }} \
-                    /p:Deterministic=${{ inputs.deterministic }} \
-                    /p:ContinuousIntegrationBuild=${{ inputs.continuousIntegrationBuild }} \
-                    /p:Version="$releaseVersion" \
-                    /p:RepositoryUrl="$repoUrl"
+        
+        if [ "${{ inputs.skipPackingArgs }}" = "true" ]; then
+          echo "Skipping additional packing arguments."
+          dotnet pack -c Release -clp:ErrorsOnly \
+                      -o deploy \
+                      /p:Version="$releaseVersion" \
+                      /p:RepositoryUrl="$repoUrl"
+        else
+          dotnet pack -c Release -clp:ErrorsOnly \
+                      -o deploy \
+                      /p:PublishRepositoryUrl=${{ inputs.publishRepositoryUrl }} \
+                      /p:PublishRepositoryType=${{ inputs.publishRepositoryType }} \
+                      /p:EmbedUntrackedSources=${{ inputs.embedUntrackedSources }} \
+                      /p:IncludeSymbols=${{ inputs.includeSymbols }} \
+                      /p:SymbolPackageFormat=${{ inputs.symbolPackageFormat }} \
+                      /p:Deterministic=${{ inputs.deterministic }} \
+                      /p:ContinuousIntegrationBuild=${{ inputs.continuousIntegrationBuild }} \
+                      /p:Version="${{ inputs.releaseVersion }}" \
+                      /p:RepositoryUrl="${{ inputs.repoUrl }}"
+        fi
     - name: Publish Nuget Package
       shell: bash
       env: 
